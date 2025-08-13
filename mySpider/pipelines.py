@@ -1,3 +1,5 @@
+import logging
+
 import pymongo
 from itemadapter import ItemAdapter
 
@@ -27,8 +29,12 @@ class MongoPipeline:
     def process_item(self, item, spider):
         data = ItemAdapter(item).asdict()
         self.db[self.mongo_collection].update_one(
-            {"jsondatas.indexdata.id": data['jsondatas']["indexdata"]["id"]},
-            {"$set": data},  # 完全覆盖旧文档
+            {
+                "jsondatas.indexdata.id": data['jsondatas']['indexdata']['id'],
+                "jsondatas.c_class": data['jsondatas']['c_class']
+            },
+            {"$set": data},
             upsert=True
         )
+        logging.log(logging.INFO,data)
         return item

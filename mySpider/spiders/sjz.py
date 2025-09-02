@@ -65,13 +65,13 @@ class SjzSpider(scrapy.Spider):
 
     def gettoken(self,a):
         # 1. 获取 10 位 Unix 时间戳（秒级）
-        tim = str(int(time.time()-5))
+        tim = str(int(time.time()+4))
         # 2. 第一次 MD5 (a + tim)
-        print(a+tim)
+        #print(a+tim)
         a1 = hashlib.md5((a + tim).encode()).hexdigest()
-        print(a1)
+        #print(a1)
         # 3. 第二次 MD5 (tim + a1)
-        print(tim+a1)
+        #print(tim+a1)
         result = hashlib.md5((tim + a1+'私自使用，后果自负！我方保留起诉权利！').encode()).hexdigest()
     
         return result, tim  # 同时返回结果和时间戳，方便调用方使用
@@ -79,8 +79,8 @@ class SjzSpider(scrapy.Spider):
 
         url = "&".join(start_url2.replace("pagenumber", '1').split('&')[:5])
         token, times = self.gettoken(url.split('?')[1])
-        print(token, times)
-        print(url)
+        #print(token, times)
+        #print(url)
         url = url + f'&token={token}&timestamp={times}'
         res=requests.get(url,headers=self.headers)
         count=int(res.json()['count'])
@@ -98,13 +98,14 @@ class SjzSpider(scrapy.Spider):
             pagemax = self.get_maxpagenumber(start_url2)
             for i in range(1,pagemax+1):
                 url="&".join(start_url2.replace("pagenumber",str(i)).split('&')[:5])
-                token,times=self.gettoken(url.split('?')[1])
-                print(token,times)
-                print(url)
-                url=url+f'&token={token}&timestamp={times}'
-
                 yield scrapy.Request(
                     url=url,
+                    meta={
+                        'needs_timestamp': True,  # 标记这个请求需要添加时间戳
+                        'base_url': url,  # 传递基础URL
+                        'tokendata': url.split('?')[1],  # 传递token
+                        'c_class': c  # 传递其他参数
+                    },
                     headers=self.headers,
                     method='get',
                     callback=self.parse,
@@ -122,8 +123,7 @@ class SjzSpider(scrapy.Spider):
                 print(i)
                 id=i["id"]
                 token,times=self.gettoken('id='+str(id))
-                print(token,times)
-                url = f"https://api.acgice.com/api/sjz/hour?id={id}&token={token}&timestamp={times}"
+                #url = f"https://api.acgice.com/api/sjz/hour?id={id}&token={token}&timestamp={times}"
                 headers = {
                     'accept': 'application/json, text/plain, */*',
                     'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
@@ -138,9 +138,15 @@ class SjzSpider(scrapy.Spider):
                     'sec-fetch-site': 'same-site',
                     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0'
                 }
+
                 yield scrapy.Request(
-                    url=url,
+                    url=f"https://api.acgice.com/api/sjz/hour?id={id}",
                     headers=headers,
+                    meta={
+                        'needs_timestamp': True,  # 标记这个请求需要添加时间戳
+                        'base_url': f"https://api.acgice.com/api/sjz/hour?id={id}",  # 传递基础URL
+                        'tokendata': 'id='+str(id),  # 传递token
+                    },
                     callback=self.parselist,
                     cb_kwargs={'i':i,'c_class': c_class},
                 )

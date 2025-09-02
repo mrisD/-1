@@ -2,9 +2,11 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import hashlib
 
 from scrapy import signals
-
+import time
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 
@@ -98,3 +100,48 @@ class MyspiderDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
+
+
+import time
+import hashlib
+
+
+class TimestampMiddleware:
+
+    def gettoken(self, a):
+        if not a:
+            return None, None
+
+        # 1. 获取 10 位 Unix 时间戳（秒级）
+        tim = str(int(time.time() + 4))
+        # 2. 第一次 MD5 (a + tim)
+        a1 = hashlib.md5((a + tim).encode()).hexdigest()
+        # 3. 第二次 MD5 (tim + a1)
+        result = hashlib.md5((tim + a1 + '私自使用，后果自负！我方保留起诉权利！').encode()).hexdigest()
+        return result, tim
+
+    def process_request(self, request, spider):
+        # 检查是否需要添加时间戳
+        if request.meta.get('needs_timestamp'):
+            token_data = request.meta.get('tokendata')
+            if not token_data:
+                spider.logger.warning("Missing tokendata in request meta")
+                return None
+
+            token, new_timestamp = self.gettoken(token_data)
+
+            if token and new_timestamp:
+                # 构建新的URL
+                new_url = request.url + f'&token={token}&timestamp={new_timestamp}'
+
+                # 使用 replace() 创建新请求并返回它
+                new_request = request.replace(
+                    url=new_url,
+                    # 清除needs_timestamp标记，避免无限循环
+                    meta={**request.meta, 'needs_timestamp': False}
+                )
+
+                spider.logger.debug(f'Updated URL with timestamp: {new_url}')
+                return new_request  # 返回新请求来替换原请求
+
+        return None  # 继续处理原请求

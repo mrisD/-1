@@ -65,7 +65,7 @@ class SjzSpider(scrapy.Spider):
 
     def gettoken(self,a):
         # 1. 获取 10 位 Unix 时间戳（秒级）
-        tim = str(int(time.time()+4))
+        tim = str(int(time.time()-3))
         # 2. 第一次 MD5 (a + tim)
         #print(a+tim)
         a1 = hashlib.md5((a + tim).encode()).hexdigest()

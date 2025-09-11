@@ -113,7 +113,7 @@ class TimestampMiddleware:
             return None, None
 
         # 1. 获取 10 位 Unix 时间戳（秒级）
-        tim = str(int(time.time() + 4))
+        tim = str(int(time.time()))
         # 2. 第一次 MD5 (a + tim)
         a1 = hashlib.md5((a + tim).encode()).hexdigest()
         # 3. 第二次 MD5 (tim + a1)

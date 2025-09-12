@@ -122,7 +122,7 @@ class SjzSpider(scrapy.Spider):
             for i in lst:
                 print(i)
                 id=i["id"]
-                token,times=self.gettoken('id='+str(id))
+                #token,times=self.gettoken('id='+str(id))
                 #url = f"https://api.acgice.com/api/sjz/hour?id={id}&token={token}&timestamp={times}"
                 headers = {
                     'accept': 'application/json, text/plain, */*',

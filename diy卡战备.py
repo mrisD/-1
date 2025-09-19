@@ -112,9 +112,7 @@ def gettoken( a):
 
 
 key_num,key=getimgcapth('https://www.acgice.com/api/captcha')
-
 url = f"https://api.acgice.com/api/sjz/jzv3_diy?zb=112500&key={key}&key_num={key_num}&is_bb=1&is_gun=0&is_tk=1&is_hj=1&is_xg=1&is_sq=0&token=196d54b0aed789ef9d9eae4e53f99c84&timestamp=1757659207"
-
 url=url.split('&token')[0]
 print(url)
 token,tim = gettoken(url.split('?')[1])
@@ -145,3 +143,6 @@ data = decrypt(data, aeskey, iv)
 print(UrlDecBase64(data.replace('非法侵入计算机信息系统罪,我方企业保留报警和起诉权利', '')))
 
 
+
+
+{'code': 0, 'message': '成功', 'msg': '成功', 'data': {'captcha': 'data:image/png;base64,iVBORw0KGgoA.........', 'key': 'D6S7FXxoc8ncUHhD7yh0'}}
